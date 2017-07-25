@@ -1,0 +1,67 @@
+.green {
+    color: #009900;
+}
+
+.red {
+    color: #aa0000;
+}
+
+.panel {
+    float:left;
+}
+
+.panel-body > img {
+    width:100px;
+    height:150px;
+}
+
+.map-td, .map-card {
+  width: 48px; /* 240px;*/
+  height: 69px; /*345px;*/
+  padding:0;
+  margin:0;
+}
+
+.map-td {
+  border: 2px solid rgba(0, 0, 0, 0.15);
+}
+
+#map {
+  width:100%;
+}
+
+#map > table {
+  margin: 0 auto;
+}
+
+.map-row-label {
+  width:20px;
+  text-align:center;
+}
+
+#cards-panel {
+  width:100%; 
+  text-align:center;
+}
+
+.rotated {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+
+@media (max-width: 600px) {
+  .map-td, .map-card {
+    width: calc((90vw - 20px)/9); /*48px; /* 240px;*/
+    height: calc((90vw - 20px)/9/48*69); /*69px; /*345px;*/
+  }
+
+  .card-btn, .disabled-overlay, .blocked-overlay {
+    /* width:24%; */
+    width: calc(24vw);
+    height: calc(35vw);
+  }
+}

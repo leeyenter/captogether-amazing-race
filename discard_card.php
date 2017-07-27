@@ -1,5 +1,6 @@
 <?php
 session_start();
+# Also used to reveal the goal card
 require "sql_login.php";
 $card_type = $_POST["card_type"];
 $lower_block = $_POST["lower_block"];

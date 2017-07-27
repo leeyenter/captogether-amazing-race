@@ -1,14 +1,15 @@
 <?php
 require "sql_login.php";
+# This page highlights helper functions which may be useful 
 
 # To generate a unique hash for each group
-$stmt = $db->prepare("UPDATE foc_groups SET hash = ? WHERE id = ? LIMIT 1");
-for ($i = 1; $i <= 16; $i++) {
-  $hash = substr(hash("sha1", rand()), 0, 6);
-  echo $hash."<br />";
-  $stmt->bind_param('si', $hash, $i);
-  $stmt->execute();
-}
+// $stmt = $db->prepare("UPDATE foc_groups SET hash = ? WHERE id = ? LIMIT 1");
+// for ($i = 1; $i <= 16; $i++) {
+//   $hash = substr(hash("sha1", rand()), 0, 6);
+//   echo $hash."<br />";
+//   $stmt->bind_param('si', $hash, $i);
+//   $stmt->execute();
+// }
 
 # Generate dummy stations
 // $stmt = $db->prepare("INSERT INTO foc_stations (name, hash) VALUES (?, ?)");

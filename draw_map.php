@@ -24,9 +24,6 @@ $checking[$rows][$goal2+1]["left"] = 1;
 $checking[$rows-1][$goal2]["can_place"] = true;
 $checking[$rows-1][$goal2]["bottom"] = 1;
 
-// should also probably include for the 3 goal cards also? or at least allow them to be placed
-// will need further testing
-
 $stmt = $db->prepare("SELECT foc_cards_on_board.id, foc_cards_on_board.rotated, foc_cards_on_board.row, foc_cards_on_board.col,
   foc_card_types.connect_top, foc_card_types.connect_left, foc_card_types.connect_bottom,
   foc_card_types.connect_right, foc_card_types.path, foc_card_types.filename FROM foc_cards_on_board INNER JOIN foc_card_types ON
@@ -94,25 +91,23 @@ if ($_GET["curr_mode"] != "goals") {
 }
 
 // Check whether goal card is reached
+
 $goalLeft = false;
 $goalMiddle = false;
 $goalRight = false;
 
 $cardsToCheck = [];
-$checked = [];
-// Populate first for goal 1
-array_push($cardsToCheck, ["row"=> 1, "col"=> $goal1-1]);
-array_push($cardsToCheck, ["row"=> 1, "col"=> $goal1+1]);
-array_push($cardsToCheck, ["row"=> 2, "col"=> $goal1]);
+$checked = []; # so that we don't add the same location multiple times
+// Populate for goal 1
+array_push($cardsToCheck, ["row"=> $rows, "col"=> $goal2-1]);
+array_push($cardsToCheck, ["row"=> $rows, "col"=> $goal2+1]);
+array_push($cardsToCheck, ["row"=> $rows-1, "col"=> $goal2]);
 
-$checked = [["row"=> 1, "col"=> $goal1-1], ["row"=> 1, "col"=> $goal1+1], ["row"=> 2, "col"=> $goal1]];
+$checked = [["row"=> $rows, "col"=> $goal2-1], ["row"=> $rows, "col"=> $goal2+1], ["row"=> $rows-1, "col"=> $goal2]];
 
 while (count($cardsToCheck) > 0) {
   $coords = array_shift($cardsToCheck);
-  if ($coords["row"] == $rows && $coords["col"] == $goal2) {
-      $goalLeft = true;
-      break;
-    }
+
   if (isset($checking[$coords["row"]][$coords["col"]]["path"]) && $checking[$coords["row"]][$coords["col"]]["path"]) {
     
     # I want to add top, left, bottom, right
@@ -134,89 +129,19 @@ while (count($cardsToCheck) > 0) {
     # Add right if not rightmost
     if ($coords["col"] < $cols && !in_array($coords["row"]."#".($coords["col"]+1), $checked)) {
       array_push($cardsToCheck, ["row"=> $coords["row"], "col"=> $coords["col"]+1]);
-      array_push($checked, $coords["row"]."#".($coords["col"]-1));
+      array_push($checked, $coords["row"]."#".($coords["col"]+1));
     }
   }
 }
-$cardsToCheck = [];
-$checked = [];
-// Populate first for goal 2
-array_push($cardsToCheck, ["row"=> 1, "col"=> $goal2-1]);
-array_push($cardsToCheck, ["row"=> 1, "col"=> $goal2+1]);
-array_push($cardsToCheck, ["row"=> 2, "col"=> $goal2]);
 
-$checked = [["row"=> 1, "col"=> $goal2-1], ["row"=> 1, "col"=> $goal2+1], ["row"=> 2, "col"=> $goal2]];
-
-while (count($cardsToCheck) > 0) {
-  $coords = array_shift($cardsToCheck);
-  if ($coords["row"] == $rows && $coords["col"] == $goal2) {
-      $goalMiddle = true;
-      break;
-    }
-  if (isset($checking[$coords["row"]][$coords["col"]]["path"]) && $checking[$coords["row"]][$coords["col"]]["path"]) {
-    
-    # I want to add top, left, bottom, right
-    # Add top if not top row
-    if ($coords["row"] > 1 && !in_array(($coords["row"]-1)."#".$coords["col"], $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"]-1, "col"=> $coords["col"]]);
-      array_push($checked, ($coords["row"]-1)."#".$coords["col"]);
-    }
-    # Add bottom if not bottom row
-    if ($coords["row"] < $rows && !in_array(($coords["row"]+1)."#".$coords["col"], $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"]+1, "col"=> $coords["col"]]);
-      array_push($checked, ($coords["row"]+1)."#".$coords["col"]);
-    }
-    # Add left if not leftmost
-    if ($coords["col"] > 1 && !in_array($coords["row"]."#".($coords["col"]-1), $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"], "col"=> $coords["col"]-1]);
-      array_push($checked, $coords["row"]."#".($coords["col"]-1));
-    }
-    # Add right if not rightmost
-    if ($coords["col"] < $cols && !in_array($coords["row"]."#".($coords["col"]+1), $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"], "col"=> $coords["col"]+1]);
-      array_push($checked, $coords["row"]."#".($coords["col"]-1));
-    }
-  }
+if (in_array("1#$goal1", $checked)) {
+  $goalLeft = true;
 }
-$cardsToCheck = [];
-$checked = [];
-// Populate first for goal 3
-array_push($cardsToCheck, ["row"=> 1, "col"=> $goal3-1]);
-array_push($cardsToCheck, ["row"=> 1, "col"=> $goal3+1]);
-array_push($cardsToCheck, ["row"=> 2, "col"=> $goal3]);
-
-$checked = [["row"=> 1, "col"=> $goal3-1], ["row"=> 1, "col"=> $goal3+1], ["row"=> 2, "col"=> $goal3]];
-
-while (count($cardsToCheck) > 0) {
-  $coords = array_shift($cardsToCheck);
-  if ($coords["row"] == $rows && $coords["col"] == $goal2) {
-      $goalRight = true;
-      break;
-    }
-  if (isset($checking[$coords["row"]][$coords["col"]]["path"]) && $checking[$coords["row"]][$coords["col"]]["path"]) {
-    
-    # I want to add top, left, bottom, right
-    # Add top if not top row
-    if ($coords["row"] > 1 && !in_array(($coords["row"]-1)."#".$coords["col"], $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"]-1, "col"=> $coords["col"]]);
-      array_push($checked, ($coords["row"]-1)."#".$coords["col"]);
-    }
-    # Add bottom if not bottom row
-    if ($coords["row"] < $rows && !in_array(($coords["row"]+1)."#".$coords["col"], $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"]+1, "col"=> $coords["col"]]);
-      array_push($checked, ($coords["row"]+1)."#".$coords["col"]);
-    }
-    # Add left if not leftmost
-    if ($coords["col"] > 1 && !in_array($coords["row"]."#".($coords["col"]-1), $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"], "col"=> $coords["col"]-1]);
-      array_push($checked, $coords["row"]."#".($coords["col"]-1));
-    }
-    # Add right if not rightmost
-    if ($coords["col"] < $cols && !in_array($coords["row"]."#".($coords["col"]+1), $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"], "col"=> $coords["col"]+1]);
-      array_push($checked, $coords["row"]."#".($coords["col"]-1));
-    }
-  }
+if (in_array("1#$goal2", $checked)) {
+  $goalMiddle = true;
+}
+if (in_array("1#$goal3", $checked)) {
+  $goalRight = true;
 }
 
 ?>
@@ -267,7 +192,7 @@ while (count($cardsToCheck) > 0) {
     ?>
     <table>
       <?php
-      $alphabets = array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L");
+      $alphabets = array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"); // used as column names
 
       for ($row = 0; $row <= $rows; $row++) {
         echo "<tr>";

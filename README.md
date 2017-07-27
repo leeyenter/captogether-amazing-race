@@ -33,7 +33,3 @@ also dedicated Game Masters to control the giving out of cards.
     of the game. 
 
 *Image assets were retrieved from http://imgur.com/gallery/gio5M*. 
-
-TO-DO:
-* Add schema for MySQL database
-* Clean up code (comments, split files properly, remove extra code, maybe organise it better)

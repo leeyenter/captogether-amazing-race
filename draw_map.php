@@ -37,51 +37,49 @@ while($stmt->fetch()) {
   $checking[$card_row][$card_col]["rotated"] = $rotated;
   $checking[$card_row][$card_col]["path"] = $path;
 
-  if ($_GET["curr_mode"] == "paths") {
-    if ($rotated == 0) {
-      $top = $connect_top;
-      $bottom = $connect_bottom;
-      $left = $connect_left;
-      $right = $connect_right;
-    } else {
-      # Flipped
-      $top = $connect_bottom;
-      $bottom = $connect_top;
-      $left = $connect_right;
-      $right = $connect_left;
-    }
-    # Update the surrounding cards
-    if ($card_row > 1) {
-      # Can place in the space above
-      $checking[$card_row-1][$card_col]["bottom"] = $top;
+  if ($rotated == 0) {
+    $top = $connect_top;
+    $bottom = $connect_bottom;
+    $left = $connect_left;
+    $right = $connect_right;
+  } else {
+    # Flipped
+    $top = $connect_bottom;
+    $bottom = $connect_top;
+    $left = $connect_right;
+    $right = $connect_left;
+  }
+  # Update the surrounding cards
+  if ($card_row > 1) {
+    # Can place in the space above
+    $checking[$card_row-1][$card_col]["bottom"] = $top;
 
-      if ($top) {
-        $checking[$card_row-1][$card_col]["can_place"] = true;
-      }
+    if ($top) {
+      $checking[$card_row-1][$card_col]["can_place"] = true;
     }
-    if ($card_row < $rows) {
-      # Can place in the space below
-      $checking[$card_row+1][$card_col]["top"] = $bottom;
+  }
+  if ($card_row < $rows) {
+    # Can place in the space below
+    $checking[$card_row+1][$card_col]["top"] = $bottom;
 
-      if ($bottom) {
-        $checking[$card_row+1][$card_col]["can_place"] = true;
-      }
+    if ($bottom) {
+      $checking[$card_row+1][$card_col]["can_place"] = true;
     }
-    if ($card_col > 1) {
-      # Can place in the space on the left
-      $checking[$card_row][$card_col-1]["right"] = $left;
+  }
+  if ($card_col > 1) {
+    # Can place in the space on the left
+    $checking[$card_row][$card_col-1]["right"] = $left;
 
-      if ($left) {
-        $checking[$card_row][$card_col-1]["can_place"] = true;
-      }
+    if ($left) {
+      $checking[$card_row][$card_col-1]["can_place"] = true;
     }
-    if ($card_col < $cols) {
-      # Can place in the space on the right
-      $checking[$card_row][$card_col+1]["left"] = $right;
+  }
+  if ($card_col < $cols) {
+    # Can place in the space on the right
+    $checking[$card_row][$card_col+1]["left"] = $right;
 
-      if ($right) {
-        $checking[$card_row][$card_col+1]["can_place"] = true;
-      }
+    if ($right) {
+      $checking[$card_row][$card_col+1]["can_place"] = true;
     }
   }
 }
@@ -97,39 +95,45 @@ $goalMiddle = false;
 $goalRight = false;
 
 $cardsToCheck = [];
-$checked = []; # so that we don't add the same location multiple times
-// Populate for goal 1
+
 array_push($cardsToCheck, ["row"=> $rows, "col"=> $goal2-1]);
 array_push($cardsToCheck, ["row"=> $rows, "col"=> $goal2+1]);
 array_push($cardsToCheck, ["row"=> $rows-1, "col"=> $goal2]);
 
 $checked = [["row"=> $rows, "col"=> $goal2-1], ["row"=> $rows, "col"=> $goal2+1], ["row"=> $rows-1, "col"=> $goal2]];
 
+function add_surrounding_cards_to_path($row, $col) {
+  global $checked;
+  global $cardsToCheck;
+
+  if (!in_array("$row#$col", $checked)) {
+    array_push($cardsToCheck, ["row" => $row, "col" => $col]);
+    array_push($checked, "$row#$col");
+  }
+}
+
 while (count($cardsToCheck) > 0) {
   $coords = array_shift($cardsToCheck);
 
   if (isset($checking[$coords["row"]][$coords["col"]]["path"]) && $checking[$coords["row"]][$coords["col"]]["path"]) {
     
-    # I want to add top, left, bottom, right
+    # Add the surrounding cards if they have not been added before, and have a path leading to them
+
     # Add top if not top row
-    if ($coords["row"] > 1 && !in_array(($coords["row"]-1)."#".$coords["col"], $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"]-1, "col"=> $coords["col"]]);
-      array_push($checked, ($coords["row"]-1)."#".$coords["col"]);
+    if ($coords["row"] > 1 && $checking[$coords["row"]-1][$coords["col"]]["bottom"]) {
+      add_surrounding_cards_to_path($coords["row"]-1, $coords["col"]);
     }
     # Add bottom if not bottom row
-    if ($coords["row"] < $rows && !in_array(($coords["row"]+1)."#".$coords["col"], $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"]+1, "col"=> $coords["col"]]);
-      array_push($checked, ($coords["row"]+1)."#".$coords["col"]);
+    if ($coords["row"] < $rows && $checking[$coords["row"]+1][$coords["col"]]["top"]) {
+      add_surrounding_cards_to_path($coords["row"]+1, $coords["col"]);
     }
     # Add left if not leftmost
-    if ($coords["col"] > 1 && !in_array($coords["row"]."#".($coords["col"]-1), $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"], "col"=> $coords["col"]-1]);
-      array_push($checked, $coords["row"]."#".($coords["col"]-1));
+    if ($coords["col"] > 1 && $checking[$coords["row"]][$coords["col"]-1]["right"]) {
+      add_surrounding_cards_to_path($coords["row"], $coords["col"]-1);
     }
     # Add right if not rightmost
-    if ($coords["col"] < $cols && !in_array($coords["row"]."#".($coords["col"]+1), $checked)) {
-      array_push($cardsToCheck, ["row"=> $coords["row"], "col"=> $coords["col"]+1]);
-      array_push($checked, $coords["row"]."#".($coords["col"]+1));
+    if ($coords["col"] < $cols && $checking[$coords["row"]][$coords["col"]+1]["left"]) {
+      add_surrounding_cards_to_path($coords["row"], $coords["col"]+1);
     }
   }
 }
@@ -156,38 +160,6 @@ if (in_array("1#$goal3", $checked)) {
       $curr_rotated = true;
     } else {
       $curr_rotated = false;
-    }
-
-    if ($_GET["curr_mode"] == "paths") {
-      # Show the current card selected, and give the option to rotate the card
-      $stmt = $db->prepare("SELECT filename, connect_top, connect_left, connect_right, connect_bottom FROM foc_card_types WHERE id = ? LIMIT 1");
-      $stmt->bind_param('i', $_GET["card"]);
-      $stmt->execute();
-      $stmt->bind_result($card_pic, $connect_top, $connect_left, $connect_right, $connect_bottom);
-
-      while ($stmt->fetch()) {
-        echo "
-        <button type='button' class='btn btn-default' onclick='rotate_card()'>
-          <span class='glyphicon glyphicon-refresh' aria-hidden='true'></span>
-          &nbsp;Rotate card
-        </button>
-        <br /><br />
-        Select where to place &nbsp;&nbsp;
-        <img src='http://leeyenter.com/captogether/imgs/$card_pic' class='map-td ";
-        if ($curr_rotated) {
-          echo "rotated";
-          // Swap the available connections
-          $tmp = $connect_bottom;
-          $connect_bottom = $connect_top;
-          $connect_top = $tmp;
-          
-          $tmp = $connect_left; 
-          $connect_left = $connect_right;
-          $connect_right = $tmp;
-          
-        }
-        echo "'>&nbsp; :";
-      }
     }
     ?>
     <table>
@@ -279,5 +251,37 @@ if (in_array("1#$goal3", $checked)) {
   <?php 
 if ($_GET["curr_mode"] != "goals") {
   echo "</form>";
+}
+
+if ($_GET["curr_mode"] == "paths") {
+  # Show the current card selected, and give the option to rotate the card
+  $stmt = $db->prepare("SELECT filename, connect_top, connect_left, connect_right, connect_bottom FROM foc_card_types WHERE id = ? LIMIT 1");
+  $stmt->bind_param('i', $_GET["card"]);
+  $stmt->execute();
+  $stmt->bind_result($card_pic, $connect_top, $connect_left, $connect_right, $connect_bottom);
+
+  while ($stmt->fetch()) {
+    echo "
+    <button type='button' class='btn btn-default' onclick='rotate_card()'>
+      <span class='glyphicon glyphicon-refresh' aria-hidden='true'></span>
+      &nbsp;Rotate card
+    </button>
+    <br /><br />
+    Select where to place &nbsp;&nbsp;
+    <img src='http://leeyenter.com/captogether/imgs/$card_pic' class='map-td ";
+    if ($curr_rotated) {
+      echo "rotated";
+      // Swap the available connections
+      $tmp = $connect_bottom;
+      $connect_bottom = $connect_top;
+      $connect_top = $tmp;
+      
+      $tmp = $connect_left; 
+      $connect_left = $connect_right;
+      $connect_right = $tmp;
+      
+    }
+    echo "'>&nbsp; :";
+  }
 }
 ?>

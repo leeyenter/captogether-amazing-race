@@ -12,6 +12,8 @@ create a log of everything that's going on.
 * **JavaScript** (and [jQuery](https://jquery.com/)) is used to update the respective segments
 of the UI whenever new data is coming in. 
 
+*Image assets were retrieved from http://imgur.com/gallery/gio5M*. 
+
 ## Roles Included
 
 There are 3 different UIs available, that fulfill different roles. The game was structured
@@ -32,4 +34,17 @@ also dedicated Game Masters to control the giving out of cards.
     as well as what cards each group was given during the course
     of the game. 
 
-*Image assets were retrieved from http://imgur.com/gallery/gio5M*. 
+## Features
+
+* Users and game masters log in using unique hashes (designed not to be incredibly secure but increase ease of short-term use)
+* Admin log in using password "`dragon4`"
+* Live updates on all 3 UIs whenever cards are given, used or discarded
+* Log of all actions done, viewable by users (for cards played) and the admin
+* Automatic highlighting of possible places to put cards, and automatic flipping of goal cards when a path is built
+
+## Gameplay
+
+* Users must keep the number of cards in their hand between 3 to 4 cards, unless they have requested for the GM to 'close' their group
+* After their group is closed, they are also unable to receive any more cards
+* Blocking another group requires that group to discard a card instead of playing it
+* They can also opt to discard cards without playing them
